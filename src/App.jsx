@@ -11,6 +11,7 @@ function App() {
     JSON.parse(localStorage.getItem('history')) || []
   )
   const [loading, setLoading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const askQuestion = async (customQuestion = '') => {
     const finalQuestion = customQuestion || question
@@ -75,13 +76,15 @@ function App() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center">
+      <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center relative">
         {/* Sidebar */}
-        <div className="col-span-1 bg-[#202123] hidden md:block">
+        <div
+          className={`col-span-1 bg-[#202123] z-20 fixed md:static top-0 left-0 h-full w-64 transform transition-transform duration-300
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        >
           <h1 className="text-center text-2xl font-bold mt-5 flex justify-center bg-clip-text text-transparent bg-gradient-to-r from-pink-700 to-violet-700">
             Recent Search
             <button onClick={clearHistory} className="cursor-pointer ml-2">
-              {/* Trash icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="24px"
@@ -108,17 +111,25 @@ function App() {
           </ul>
         </div>
 
+        {/* Toggle Button (Mobile) */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="absolute top-4 left-4 md:hidden z-30 rounded-lg pt-2 text-white"
+        >
+          ☰
+        </button>
+
         {/* Main Content */}
-        <div className="col-span-4 md:p-10 p-4">
+        <div className="col-span-4 md:p-10 p-4 flex flex-col">
           <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
             Hello User, Ask Me Anything
           </h1>
 
           <div
             ref={scrollToAns}
-            className="container h-96 md:h-130 overflow-y-scroll scroll-hide border-none focus:outline-none"
+            className="container flex-1 overflow-y-scroll scroll-hide border-none focus:outline-none"
           >
-            <div className="text-white space-y-6">
+            <div className="text-white space-y-6 pb-20 md:pb-0">
               {history.map((entry, idx) => (
                 <div key={idx} className="mb-6">
                   <Answer ans={entry.q} index={0} totalResult={1} type="q" />
@@ -145,12 +156,12 @@ function App() {
           </div>
 
           {/* Input */}
-          <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4">
+          <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4 md:static fixed bottom-3 left-0">
             <input
               type="text"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && askQuestion()}
+              onKeyDown={(e) => e.key === 'Enter' && askQuestion()}
               className="w-full h-full p-3 border-none focus:outline-none bg-transparent"
               placeholder="Ask me Anything"
             />
@@ -159,12 +170,11 @@ function App() {
               disabled={loading}
               className="p-3"
             >
-              {loading ? "..." : "Ask"}
+              {loading ? '...' : 'Ask'}
             </button>
           </div>
         </div>
       </div>
-
     </>
   )
 }
