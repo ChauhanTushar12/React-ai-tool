@@ -75,11 +75,13 @@ function App() {
 
   return (
     <>
-      <div className="grid grid-cols-5 h-screen text-center">
-        <div className="col-span-1 bg-[#202123]">
+      <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center">
+        {/* Sidebar */}
+        <div className="col-span-1 bg-[#202123] hidden md:block">
           <h1 className="text-center text-2xl font-bold mt-5 flex justify-center bg-clip-text text-transparent bg-gradient-to-r from-pink-700 to-violet-700">
             Recent Search
             <button onClick={clearHistory} className="cursor-pointer ml-2">
+              {/* Trash icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="24px"
@@ -106,10 +108,17 @@ function App() {
           </ul>
         </div>
 
-        <div className="col-span-4 p-10">
-          <h1 className='text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700'>Hello User, Ask Me Anything</h1>
-          <div ref={scrollToAns} className="container h-130 overflow-y-scroll scroll-hide border-none focus:outline-none">
-            <div className="text-white space-y-6 ">
+        {/* Main Content */}
+        <div className="col-span-4 md:p-10 p-4">
+          <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
+            Hello User, Ask Me Anything
+          </h1>
+
+          <div
+            ref={scrollToAns}
+            className="container h-96 md:h-130 overflow-y-scroll scroll-hide border-none focus:outline-none"
+          >
+            <div className="text-white space-y-6">
               {history.map((entry, idx) => (
                 <div key={idx} className="mb-6">
                   <Answer ans={entry.q} index={0} totalResult={1} type="q" />
@@ -127,25 +136,35 @@ function App() {
                   </ul>
                 </div>
               ))}
-              {loading && <p className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-violet-700 text-xl text-center mt-5">Thinking...</p>}
+              {loading && (
+                <p className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-violet-700 text-xl text-center mt-5">
+                  Thinking...
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-1/2 m-auto border border-zinc-600 h-14 mt-4">
+          {/* Input */}
+          <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4">
             <input
               type="text"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && askQuestion()}
-              className="w-full h-full p-3 border-none focus:outline-none"
+              onKeyDown={(e) => e.key === "Enter" && askQuestion()}
+              className="w-full h-full p-3 border-none focus:outline-none bg-transparent"
               placeholder="Ask me Anything"
             />
-            <button onClick={() => askQuestion()} disabled={loading} className="p-3">
-              {loading ? '...' : 'Ask'}
+            <button
+              onClick={() => askQuestion()}
+              disabled={loading}
+              className="p-3"
+            >
+              {loading ? "..." : "Ask"}
             </button>
           </div>
         </div>
       </div>
+
     </>
   )
 }
