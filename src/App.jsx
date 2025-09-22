@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { url } from './assets/constants'
+import { URL } from './constants'
 import Answer from './components/Answer'
 
 function App() {
@@ -40,7 +40,7 @@ function App() {
       const payload = {
         contents: [{ parts: [{ text: finalQuestion }] }],
       }
-      let response = await fetch(url, {
+      let response = await fetch(URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -124,11 +124,10 @@ function App() {
           <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
             Hello User, Ask Me Anything
           </h1>
-
           <div
             ref={scrollToAns}
-            className="container flex-1 overflow-y-scroll scroll-hide border-none focus:outline-none"
-          >
+            className="container h-130 overflow-y-scroll scroll-hide focus:outline-none"
+          > 
             <div className="text-white space-y-6 pb-20 md:pb-0">
               {history.map((entry, idx) => (
                 <div key={idx} className="mb-6">
@@ -153,9 +152,7 @@ function App() {
                 </p>
               )}
             </div>
-          </div>
-
-          {/* Input */}
+          </div> 
           <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4 md:static fixed bottom-3 left-0">
             <input
               type="text"
@@ -178,5 +175,4 @@ function App() {
     </>
   )
 }
-
 export default App
