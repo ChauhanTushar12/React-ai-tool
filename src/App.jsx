@@ -13,6 +13,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Ask new question
   const askQuestion = async (customQuestion = '') => {
     const finalQuestion = customQuestion || question
     if (!finalQuestion.trim()) return
@@ -68,6 +69,44 @@ function App() {
     }
   }
 
+  // Regenerate answer for existing history
+  const regenerateAnswer = async (question, index) => {
+    setLoading(true)
+    try {
+      const payload = {
+        contents: [{ parts: [{ text: question }] }],
+      }
+      let response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      response = await response.json()
+      let dataString =
+        response?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+      let arr = dataString
+        .split('* ')
+        .map((item) => item.trim())
+        .filter(Boolean)
+
+      setHistory((prev) =>
+        prev.map((entry, i) =>
+          i === index ? { q: question, a: arr } : entry
+        )
+      )
+
+      setTimeout(() => {
+        if (scrollToAns.current) {
+          scrollToAns.current.scrollTop = scrollToAns.current.scrollHeight
+        }
+      }, 100)
+    } catch (error) {
+      console.error('Error in regenerateAnswer:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const clearHistory = () => {
     localStorage.clear()
     setRecentHistory([])
@@ -75,107 +114,112 @@ function App() {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center relative">
-        {/* Sidebar */}
-        <div
-          className={`col-span-1 bg-[#202123] z-20 fixed md:static top-0 left-0 h-full w-64 md:1/1 transform transition-transform duration-300
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-        >
-          <h1 className="text-center text-2xl font-bold mt-5 flex justify-center bg-clip-text text-transparent bg-gradient-to-r from-pink-700 to-violet-700">
-            Recent Search
-            <button onClick={clearHistory} className="cursor-pointer ml-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px"
-                fill="#e3e3e3"
-              >
-                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
-              </svg>
-            </button>
-          </h1>
-
-          <ul className="m-5 overflow-auto">
-            {recentHistory &&
-              recentHistory.map((item, idx) => (
-                <li
-                  key={idx}
-                  onClick={() => askQuestion(item)}
-                  className="text-zinc-300 truncate text-left hover:bg-zinc-700 hover:rounded-3xl p-2 cursor-pointer"
-                >
-                  {item}
-                </li>
-              ))}
-          </ul>
-        </div>
-
-        {/* Toggle Button (Mobile) */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute top-4 left-4 md:hidden z-30 rounded-lg pt-2 text-white"
-        >
-          ☰
-        </button>
-
-        {/* Main Content */}
-        <div className="col-span-4 md:p-10 p-4 flex flex-col">
-          <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
-            Hello User, Ask Me Anything
-          </h1>
-
-          <div
-            ref={scrollToAns}
-            className="container h-130 overflow-y-scroll scroll-hide border-none focus:outline-none"
-          >
-            <div className="text-white space-y-6 pb-20 md:pb-0">
-              {history.map((entry, idx) => (
-                <div key={idx} className="mb-6">
-                  <Answer ans={entry.q} index={0} totalResult={1} type="q" />
-                  <ul>
-                    {entry.a.map((item, index) => (
-                      <li className="text-left" key={index}>
-                        <Answer
-                          ans={item}
-                          index={index}
-                          totalResult={entry.a.length}
-                          type="a"
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              {loading && (
-                <p className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-violet-700 text-xl text-center mt-5">
-                  Thinking...
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Input */}
-          <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4 md:static fixed bottom-3 left-0">
-            <input
-              type="text"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && askQuestion()}
-              className="w-full h-full p-3 border-none focus:outline-none bg-transparent"
-              placeholder="Ask me Anything"
-            />
-            <button
-              onClick={() => askQuestion()}
-              disabled={loading}
-              className="p-3"
+    <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center relative">
+      {/* Sidebar */}
+      <div
+        className={`col-span-1 bg-[#202123] z-20 fixed md:static top-0 left-0 h-full w-64 md:1/1 transform transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      >
+        <h1 className="text-center text-2xl font-bold mt-5 flex justify-center bg-clip-text text-transparent bg-gradient-to-r from-pink-700 to-violet-700">
+          Recent Search
+          <button onClick={clearHistory} className="cursor-pointer ml-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="24px"
+              viewBox="0 -960 960 960"
+              width="24px"
+              fill="#e3e3e3"
             >
-              {loading ? '...' : 'Ask'}
-            </button>
+              <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+            </svg>
+          </button>
+        </h1>
+
+        <ul className="m-5 overflow-auto">
+          {recentHistory &&
+            recentHistory.map((item, idx) => (
+              <li
+                key={idx}
+                onClick={() => askQuestion(item)}
+                className="text-zinc-300 truncate text-left hover:bg-zinc-700 hover:rounded-3xl p-2 cursor-pointer"
+              >
+                {item}
+              </li>
+            ))}
+        </ul>
+      </div>
+
+      {/* Toggle Button (Mobile) */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="absolute top-4 left-4 md:hidden z-30 rounded-lg pt-2 text-white"
+      >
+        ☰
+      </button>
+
+      {/* Main Content */}
+      <div className="col-span-4 md:p-10 p-4 flex flex-col">
+        <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
+          Hello User, Ask Me Anything
+        </h1>
+
+        <div
+          ref={scrollToAns}
+          className="container h-130 overflow-y-scroll scroll-hide border-none focus:outline-none"
+        >
+          <div className="text-white space-y-6 pb-32 md:pb-0">
+            {history.map((entry, idx) => (
+              <div
+                key={idx}
+                className="mb-6 p-3 border border-zinc-700 rounded-xl relative"
+              >
+                <Answer ans={entry.q} type="q" />
+                <ul>
+                  {entry.a.map((item, index) => (
+                    <li className="text-left" key={index}>
+                      <Answer
+                        ans={item}
+                        index={index}
+                        totalResult={entry.a.length}
+                        type="a"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            {loading && (
+              <p className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-violet-700 text-xl text-center mt-5">
+                Thinking...
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Input fixed at bottom */}
+        <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 fixed bottom-3 left-0 md:static">
+          <input
+            type="text"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && askQuestion()}
+            className="w-full h-full p-3 border-none focus:outline-none bg-transparent"
+            placeholder="Ask me Anything"
+          />
+          <button
+            onClick={() => askQuestion()}
+            disabled={loading}
+            className="p-3"
+          >
+            {loading ? '...' : 'Ask'}
+          </button>
+        </div>
+        {/* Warning above input */}
+        <p className="text-sm text-white text-center mb-2">
+          AI can make mistakes, please check your data thoroughly.
+        </p>
       </div>
-    </>
+    </div>
   )
 }
 
