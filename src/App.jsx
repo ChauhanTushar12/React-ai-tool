@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { URL } from './constants'
+import { url } from './constants'
 import Answer from './components/Answer'
 
 function App() {
@@ -40,7 +40,7 @@ function App() {
       const payload = {
         contents: [{ parts: [{ text: finalQuestion }] }],
       }
-      let response = await fetch(URL, {
+      let response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -79,7 +79,7 @@ function App() {
       <div className="grid grid-cols-1 md:grid-cols-5 h-screen text-center relative">
         {/* Sidebar */}
         <div
-          className={`col-span-1 bg-[#202123] z-20 fixed md:static top-0 left-0 h-full w-64 transform transition-transform duration-300
+          className={`col-span-1 bg-[#202123] z-20 fixed md:static top-0 left-0 h-full w-64 md:1/1 transform transition-transform duration-300
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
         >
           <h1 className="text-center text-2xl font-bold mt-5 flex justify-center bg-clip-text text-transparent bg-gradient-to-r from-pink-700 to-violet-700">
@@ -124,10 +124,11 @@ function App() {
           <h1 className="text-2xl md:text-3xl mb-5 bg-clip-text text-transparent font-bold italic bg-gradient-to-r from-green-700 to-violet-700">
             Hello User, Ask Me Anything
           </h1>
+
           <div
             ref={scrollToAns}
-            className="container h-130 overflow-y-scroll scroll-hide focus:outline-none"
-          > 
+            className="container h-130 overflow-y-scroll scroll-hide border-none focus:outline-none"
+          >
             <div className="text-white space-y-6 pb-20 md:pb-0">
               {history.map((entry, idx) => (
                 <div key={idx} className="mb-6">
@@ -152,7 +153,9 @@ function App() {
                 </p>
               )}
             </div>
-          </div> 
+          </div>
+
+          {/* Input */}
           <div className="flex p-1 justify-center items-center bg-zinc-800 rounded-4xl text-white w-full md:w-1/2 m-auto border border-zinc-600 h-14 mt-4 md:static fixed bottom-3 left-0">
             <input
               type="text"
@@ -175,4 +178,5 @@ function App() {
     </>
   )
 }
+
 export default App
